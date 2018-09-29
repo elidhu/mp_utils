@@ -1,5 +1,6 @@
 import numpy as np
 from cv2 import cv2
+from . import convert
 
 
 def apply_gaussian_blur(image, n, border=0):
@@ -14,9 +15,22 @@ def apply_gaussian_blur(image, n, border=0):
     :return: copy of the blurred image
     :rtype: cv2 image
     """
-    img = np.copy(image)
+    return cv2.GaussianBlur(image, (n, n), border)
 
-    return cv2.GaussianBlur(img, (n, n), border)
+
+def median_blur(image, n, border=0):
+    """apply a median blur of kernel size n to the image.
+    
+    :param image: input image
+    :type image: cv2 image
+    :param n: kernel size
+    :type n: int
+    :param border: what to do when the kernel overlaps the border, defaults to 0
+    :param border: int, optional
+    :return: blurred image
+    :rtype: cv2 image
+    """
+    return cv2.medianBlur(image, n, border)
 
 
 def normalise(image):
@@ -36,3 +50,42 @@ def normalise(image):
     img = img * (255.0 / maximum)
 
     return img
+
+
+def normlise_intensity(image):
+    """normalise the intensity of the image.
+
+    using an adaptive method convert the image to LAB and normalise the
+    intensity channel before merging and converting back to BGR.
+    
+    :param image: image to be normalised
+    :type image: cv2 image
+    :return: normalised image
+    :rtype: cv2 image
+    """
+    # convert to LAB
+    lab = convert.bgr_to_lab(image)
+    # split into individual channels
+    l, a, b = cv2.split(lab)
+    
+    # normalise the intensity
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+    l = clahe.apply(l)
+
+    # merge the image back together
+    lab_img = cv2.merge([l, a, b])
+    # convert back to BGR and return it
+    return convert.lab_to_bgr(lab_img)
+
+def threshold_inrange(image, low, high):
+    pass
+
+
+def white_balance(img):
+    result = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
+    avg_a = np.average(result[:, :, 1])
+    avg_b = np.average(result[:, :, 2])
+    result[:, :, 1] = result[:, :, 1] - ((avg_a - 128) * (result[:, :, 0] / 255.0) * 1.1)
+    result[:, :, 2] = result[:, :, 2] - ((avg_b - 128) * (result[:, :, 0] / 255.0) * 1.1)
+    result = cv2.cvtColor(result, cv2.COLOR_LAB2BGR)
+    return result
