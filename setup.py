@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='mp_utils',
-      version='0.3',
+      version='0.7',
       license='MIT',
       author='kevin glasson',
       author_email='kevinglasson+mp_utils@gmail.com',

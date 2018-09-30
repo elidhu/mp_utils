@@ -5,8 +5,6 @@ from time import time
 import numpy as np
 from cv2 import cv2
 
-from . import features
-
 EXTENSIONS = ['jpg', 'jpeg', 'png']
 
 
@@ -41,9 +39,10 @@ def get_fname_and_ext(path):
     name = name.split('/')[-1]
     return name, ext
 
+
 def get_fname(path):
     """extract only the filename, excluding the extension from the path
-    
+
     :param path: path including filename
     :type path: string / path
     :return: filename
@@ -123,13 +122,6 @@ def resize_full(image, dim):
     return cv2.resize(image, dim, interpolation=cv2.INTER_AREA)
 
 
-def mask_from_contours(cnts, size, color=(255, 255, 255)):
-    blank = np.zeros(size, np.uint8)
-    mask = features.draw_contours(
-        blank, cnts, (255, 255, 255))
-    return mask
-
-
 def combine_masks(a, b):
     return cv2.bitwise_and(a, b)
 
@@ -145,13 +137,13 @@ def bbox_from_contour(cnt):
     # using cnt[0] because contours are returned in a list, even though there
     # should only be a single contour in this function
     x, y, w, h = cv2.boundingRect(cnt[0])
-    bbox = (x, y, x + w -1, y + h - 1)
+    bbox = (x, y, x + w - 1, y + h - 1)
     return bbox
 
 
 def crop_to_contour(image, cnt, padding=(0, 0)):
     """crop the image to the contour.
-    
+
     :param image: input image
     :type image: cv2 image
     :param cnt: contours to crop to
@@ -168,7 +160,7 @@ def crop_to_contour(image, cnt, padding=(0, 0)):
 
 def crop_to_bbox(image, bbox, padding=(0, 0), ignore=None):
     """crop the image to the bbox
-    
+
     :param image: input image
     :type image: cv2 image
     :param cnt: bbox to crop to (x1, y1, x2, y2)
@@ -200,6 +192,7 @@ def crop_to_bbox(image, bbox, padding=(0, 0), ignore=None):
 
     return cropped
 
+
 def timing(f):
     """decorator for timing functions
 
@@ -221,7 +214,7 @@ def timing(f):
 
 def test_correct(predict, actual, name='default test'):
     """compare two lists and provide statitics about how similar they are for testing.
-    
+
     :param predict: predictions
     :type predict: list
     :param actual: actual

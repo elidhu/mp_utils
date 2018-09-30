@@ -1,6 +1,6 @@
 import numpy as np
 from cv2 import cv2
-from . import convert
+import mp_utils.convert as convert
 
 
 def get_xform(src, dst):

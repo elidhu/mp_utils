@@ -3,7 +3,10 @@ from cv2 import cv2
 import operator
 import pytesseract
 
-from . import convert, filters, features, vis
+import mp_utils.filters as filters
+import mp_utils.vis as vis
+import mp_utils.convert as convert
+import mp_utils.features as features
 
 
 def extract_all_words(image, filter='CAPS'):

@@ -1,6 +1,7 @@
-from . import vis, convert
 import numpy as np
 from cv2 import cv2
+import mp_utils.vis as vis
+import mp_utils.convert as convert
 
 
 def quick_orb(test, exemplar, min_match_count=4):

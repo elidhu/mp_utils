@@ -1,6 +1,9 @@
 import numpy as np
 from cv2 import cv2
-from . import filters, vis, utils, convert
+import mp_utils.filters as filters
+import mp_utils.vis as vis
+import mp_utils.utils as utils
+import mp_utils.convert as convert
 
 
 def apply_harris_corners(image):
@@ -232,11 +235,6 @@ def apply_find_contours(image, n_points, min_area, n_candidates):
 
         # check the number of points and the area
         if len(approx) == n_points and area > min_area:
-            # # change it into a sensible array of n * 2 i.e. n_points * (x, y)
-            # approx = approx.reshape(n_points, 2)
-            # # convert to float32
-            # approx = np.float32(approx)
-            # append to the list of found contours
             n_point_conts.append(approx)
 
     return n_point_conts
@@ -327,3 +325,9 @@ def get_color(image, mask, color_names, color_values):
     # index of the color name was save in [0]
     color = color_names[min_dist[0]]
     return color
+
+def mask_from_contours(cnts, size, color=(255, 255, 255)):
+    blank = np.zeros(size, np.uint8)
+    mask = draw_contours(
+        blank, cnts, (255, 255, 255))
+    return mask
