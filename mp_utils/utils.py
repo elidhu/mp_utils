@@ -25,7 +25,7 @@ def get_images_in_dir(d):
         if os.path.isfile(full_path):
             paths.append(full_path)
 
-    # filter out the files that don't have typeical image extensions
+    # filter out the files that don't have typical image extensions
     image_paths = [f for f in paths if f.split('.')[-1].lower() in EXTENSIONS]
 
     return image_paths
