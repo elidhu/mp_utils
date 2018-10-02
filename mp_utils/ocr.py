@@ -50,8 +50,11 @@ def get_nums(image):
     :return: extracted words
     :rtype: list
     """
+    
     # pytesseract config
-    config = ('--psm 10 --oem 3 -c tessedit_char_whitelist=0123456789.')
+    # config = ('--psm 10 --oem 3 -c tessedit_char_whitelist=0123456789.')
+    # config = ('--psm 10 --oem 3 outputbase nobatch digits')
+    config = ('--psm 6 --oem 3 outputbase nobatch digits')
 
     # extract text and preprocess
     text = pytesseract.image_to_string(image, config=config)
