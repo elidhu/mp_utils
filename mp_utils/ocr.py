@@ -52,7 +52,6 @@ def get_nums(image):
     """
     # pytesseract config
     config = ('--psm 10 --oem 3 -c tessedit_char_whitelist=0123456789.')
-    # config = ('-l eng --oem 1 --psm 3')
 
     # extract text and preprocess
     text = pytesseract.image_to_string(image, config=config)

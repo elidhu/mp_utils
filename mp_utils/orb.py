@@ -24,27 +24,6 @@ def quick_orb(test, exemplar, min_match_count=4):
     matches = bf.match(descs1, descs2)
 
     # sort in order of distance
-    sorted_matches = sorted(matches, key = lambda x:x.distance)
-
-    # # extract the matched keypoints
-    # src_pts = np.float32([kpts1[match.queryIdx].pt for match in sorted_matches]).reshape(-1,1,2)
-    # dst_pts = np.float32([kpts2[match.trainIdx].pt for match in sorted_matches]).reshape(-1,1,2)
-
-    # ## find homography matrix and do perspective transform
-    # M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
-    # h, w = exemplar.shape[:2]
-    # pts = np.float32([ [0,0],[0,h-1],[w-1,h-1],[w-1,0] ]).reshape(-1,1,2)
-    # dst = cv2.perspectiveTransform(pts, M)
-
-    # ## draw found regions
-    # img2 = cv2.polylines(test, [np.int32(dst)], True, (0,0,255), 1, cv2.LINE_AA)
-    # vis.show(img2, title='FOUND')
-
-    # # draw match lines
-    # res = cv2.drawMatches(exemplar, kpts1, test, kpts2, sorted_matches[:50],None,flags=2)
-
-    # vis.show(res, title='ORB MATCH')
-
-    # cv2.waitKey();cv2.destroyAllWindows()
+    sorted_matches = sorted(matches, key=lambda x:x.distance)
 
     return sorted_matches
