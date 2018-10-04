@@ -24,20 +24,25 @@ def extract_all_words(image, filter='CAPS'):
     """
     # standard and inverse threshold so that at least one of the images
     # is black text on white background tessearact likes this more
+    variations = []
     _, thresh = cv2.threshold(convert.bgr_to_gray(
         image), 127, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+    variations.append(thresh)
     _, thresh_inv = cv2.threshold(convert.bgr_to_gray(
         image), 127, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)
+    variations.append(thresh_inv)
 
     # get the text from each version of the image
     if filter is 'CAPS':
-        text_w = get_caps(thresh)
-        text_b = get_caps(thresh_inv)
-        return text_w + text_b
+        text = []
+        for v in variations:
+            text.append(get_caps(v))
+        return text
     elif filter is 'NUMS':
-        text_w = get_nums(thresh)
-        text_b = get_nums(thresh_inv)
-        return text_w + text_b
+        text = []
+        for v in variations:
+            text.append(get_nums(v))
+        return text
 
 
 def get_nums(image):
@@ -260,7 +265,13 @@ def crop_area(crop):
 
 
 def find_text(image):
-
+    """attempt to isolate the text in the image.
+    
+    :param image: input image
+    :type image: cv2 image
+    :return: contours, cropped image, if text is found
+    :rtype: cv2 cnts, cv2 image, boolean
+    """
     # convert to GRAYSCALE
     g_label = convert.bgr_to_gray(image)
 
@@ -310,16 +321,21 @@ def find_text(image):
     _, cnts, _ = cv2.findContours(
         td_dilate.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    # report whether contours weere foung
+    # report whether contours weere foun
     if cnts:
         found = True
+        # optimise the contours found to only include the important ones
+        bbox = find_optimal_components_subset(cnts, td_dilate)
+        # crop to the optimal height, keep the entire width
+        im = utils.crop_to_bbox(image, bbox, ignore='x')
     else:
         found = False
+        im = image 
 
-    return cnts, td_dilate, found
+    return im, found
 
 def find_text_pytess(image):
-    """use pytesseract to attempt to find the text
+    """use pytesseract to attempt to find the text.
     
     :param image: input image
     :type image: cv2 image
@@ -345,14 +361,21 @@ def find_text_pytess(image):
 
         # crop to the bounding box
         bbox = utils.crop_to_bbox(image, (x1, y1, x2, y2), padding=(5, 24))
+        found = True
     # just return the image as is if nothing was found
     else:
         bbox = image
+        found = False
 
-    return bbox
+    return bbox, found
 
 
-def make_text_black(image):
+def is_text_black(image):
+    """attempts to determine the color of the text on thresholded image.
+    
+    :param image: input thresholded image
+    :type image: cv2 image
+    """
     # binarise the image
     _, thresh = cv2.threshold(image, 127, 255, cv2.THRESH_BINARY)
     _, thresh_inv = cv2.threshold(image, 127, 255, cv2.THRESH_BINARY_INV)

@@ -32,6 +32,14 @@ def get_images_in_dir(d):
 
 
 def get_fname_and_ext(path):
+    """extract filename and extension from path.
+
+    :param path: input path
+    :type path: str
+    :return: name and extension
+    :rtype: tuple
+    """
+
     # split the name and the ext
     name, ext = os.path.splitext(path)
 

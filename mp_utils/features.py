@@ -303,7 +303,23 @@ def isolate_diamond(image, diamond):
 
 
 def get_color(image, mask, color_names, color_values):
+    """determine the color from a list of pre-set color names and values.
+
+    :param image: input image
+    :type image: cv2 image
+    :param mask: mask to extract the mean from
+    :type mask: cv2 image
+    :param color_names: color names
+    :type color_names: list
+    :param color_values: corresponding color values
+    :type color_values: list
+    :return: color
+    :rtype: str
+    """
+    # calculate the mean in LAB colorspace
     mean = cv2.mean(convert.bgr_to_lab(image), mask)[:3]
+
+    # change to np array for distance calulation
     mean = np.asarray(mean).reshape(-1, 1, 3)
 
     # go through our colors and check distance, shortest distance is the color
@@ -326,7 +342,87 @@ def get_color(image, mask, color_names, color_values):
     color = color_names[min_dist[0]]
     return color
 
+
+def get_color_knn(image, mask, knn, lookup, nn):
+    """get the color of an image using knn method.
+
+    :param image: input image
+    :type image: cv2 image
+    :param mask: mask to extract color from
+    :type mask: cv2 image
+    :param train: training data
+    :type train: csv filename
+    :param nn: k value (nearest neighbours)
+    :type nn: int
+    :return: color
+    :rtype: str
+    """
+
+    test = cv2.mean(convert.bgr_to_rgb(image), mask)[:3]
+    test = np.float32(np.asarray(test).reshape(1, 3))
+    prediction = find_knn(test, knn, nn)
+    prediction = lookup[int(prediction[0][0])]
+    return prediction
+
+
+def find_knn(test, knn, k):
+    """make a prediction using the knn.
+
+    :param test: input value
+    :type test: numpy array
+    :param knn: model
+    :type knn: cv2 KNearest
+    :param k: k value
+    :type k: int
+    :return: result
+    :rtype: int
+    """
+    ret, results, neighbours, dist = knn.findNearest(test, k)
+    return results
+
+
+def create_knn(fname):
+    """create a knn model object.
+
+    :param fname: dataset file
+    :type fname: str
+    :return: model object, lookup table
+    :rtype: tuple
+    """
+    knn = cv2.ml.KNearest_create()
+    data, labels, lookup_table, idx_labels = load_dataset(fname)
+    knn.train(data, cv2.ml.ROW_SAMPLE, idx_labels)
+    return knn, lookup_table
+
+
+def load_dataset(fname):
+    """load dataset from file.
+
+    :param fname: dataset filename
+    :type fname: str
+    """
+    arr = np.loadtxt(fname, dtype='str', delimiter=',')
+    # split the color values off
+    data = np.float32(arr[:, :3])
+    # cplit the labels off
+    labels = arr[:, 3]
+    # create numerical class representations
+    lookup_table, idx_labels = np.unique(labels, return_inverse=True)
+    return(data, labels, lookup_table, idx_labels)
+
+
 def mask_from_contours(cnts, size, color=(255, 255, 255)):
+    """create a mask image from contours.
+
+    :param cnts: contours
+    :type cnts: cv2 contours
+    :param size: ouput image dimensions
+    :type size: tuple
+    :param color: mask color, defaults to (255, 255, 255)
+    :param color: tuple, optional
+    :return: mask image
+    :rtype: cv2 image
+    """
     blank = np.zeros(size, np.uint8)
     mask = draw_contours(
         blank, cnts, (255, 255, 255))
