@@ -232,3 +232,29 @@ def test_correct(predict, actual, name='default test'):
             incorrect += 1
     percent = (correct / (incorrect + correct)) * 100
     print('{}: {:.2f}% correct'.format(name, percent))
+
+
+def fetch_rgb(img):
+    """for outputing rgb values from click event to the terminal.
+
+    :param img: input image
+    :type img: cv2 image
+    :return: the rgb list
+    :rtype: list
+    """
+    rgb_list = []
+
+    def click_event(event, x, y, flags, param):
+        if event == cv2.EVENT_LBUTTONDOWN:
+            red = img[y, x, 2]
+            blue = img[y, x, 0]
+            green = img[y, x, 1]
+            print(red, green, blue)  # prints to command line
+            strRGB = str(red) + "," + str(green) + "," + str(blue)
+            rgb_list.append([red, green, blue])
+            cv2.imshow('original', img)
+    cv2.imshow('original', img)
+    cv2.setMouseCallback("original", click_event)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows
+    return rgb_list

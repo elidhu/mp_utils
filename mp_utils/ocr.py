@@ -7,6 +7,7 @@ import mp_utils.filters as filters
 import mp_utils.vis as vis
 import mp_utils.convert as convert
 import mp_utils.features as features
+import mp_utils.utils as utils
 
 
 def extract_all_words(image, filter='CAPS'):
@@ -52,9 +53,10 @@ def get_nums(image):
     """
     
     # pytesseract config
-    # config = ('--psm 10 --oem 3 -c tessedit_char_whitelist=0123456789.')
+    # config = ('--psm 10 --oem 3 -c tessedit_char_whitelist=0123456789/')
     # config = ('--psm 10 --oem 3 outputbase nobatch digits')
-    config = ('--psm 6 --oem 3 outputbase nobatch digits')
+    # config = ('--psm 6 --oem 3 outputbase nobatch digits')
+    config = ('--psm 6 --oem 3 -c tessedit_char_whitelist=0123456789/')
 
     # extract text and preprocess
     text = pytesseract.image_to_string(image, config=config)
@@ -76,7 +78,8 @@ def get_caps(image):
     :rtype: list
     """
     # pytesseract config
-    config = ('-l eng --oem 1 --psm 3')
+    # config = ('-l eng --oem 1 --psm 3')
+    config = ('-l eng --psm 1 --oem 3 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ')
 
     # extract text and preprocess
     text = pytesseract.image_to_string(image, config=config)
@@ -314,6 +317,39 @@ def find_text(image):
         found = False
 
     return cnts, td_dilate, found
+
+def find_text_pytess(image):
+    """use pytesseract to attempt to find the text
+    
+    :param image: input image
+    :type image: cv2 image
+    :return: words found
+    :rtype: cv2 image
+    """
+    # attempt to find the box around the number
+    box = pytesseract.image_to_boxes(image)
+    # if one exists
+    if box:
+        # each box is separated by a newline
+        box = box.split('\n')
+        # init values for 'final' box
+        x1, y1, x2, y2 = np.inf, np.inf, 0, 0
+        # combine the boxes into one box that encompasses all of them
+        for b in box:
+            b = b.split(' ')[1:-1]
+            tup = tuple([int(i) for i in b])
+            x1 = min(tup[0], x1)
+            y1 = min(tup[1], y1)
+            x2 = max(tup[2], x2)
+            y2 = max(tup[3], y2)
+
+        # crop to the bounding box
+        bbox = utils.crop_to_bbox(image, (x1, y1, x2, y2), padding=(5, 24))
+    # just return the image as is if nothing was found
+    else:
+        bbox = image
+
+    return bbox
 
 
 def make_text_black(image):
