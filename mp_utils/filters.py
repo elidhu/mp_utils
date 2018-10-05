@@ -20,7 +20,7 @@ def apply_gaussian_blur(image, n, border=0):
 
 def median_blur(image, n, border=0):
     """apply a median blur of kernel size n to the image.
-    
+
     :param image: input image
     :type image: cv2 image
     :param n: kernel size
@@ -57,7 +57,7 @@ def normlise_intensity(image):
 
     using an adaptive method convert the image to LAB and normalise the
     intensity channel before merging and converting back to BGR.
-    
+
     :param image: image to be normalised
     :type image: cv2 image
     :return: normalised image
@@ -67,7 +67,7 @@ def normlise_intensity(image):
     lab = convert.bgr_to_lab(image)
     # split into individual channels
     l, a, b = cv2.split(lab)
-    
+
     # normalise the intensity
     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
     l = clahe.apply(l)
@@ -77,15 +77,24 @@ def normlise_intensity(image):
     # convert back to BGR and return it
     return convert.lab_to_bgr(lab_img)
 
-def threshold_inrange(image, low, high):
-    pass
-
 
 def white_balance(img):
+    """apply white balancing to this image.
+
+    this code comes from a stack overflow post by norok2 which can be found here: 
+    https://stackoverflow.com/questions/46390779/automatic-white-balancing-with-grayworld-assumption
+
+    :param img: input image
+    :type img: cv2 image
+    :return: white balanced image
+    :rtype: cv2 image
+    """
     result = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
     avg_a = np.average(result[:, :, 1])
     avg_b = np.average(result[:, :, 2])
-    result[:, :, 1] = result[:, :, 1] - ((avg_a - 128) * (result[:, :, 0] / 255.0) * 1.1)
-    result[:, :, 2] = result[:, :, 2] - ((avg_b - 128) * (result[:, :, 0] / 255.0) * 1.1)
+    result[:, :, 1] = result[:, :, 1] - \
+        ((avg_a - 128) * (result[:, :, 0] / 255.0) * 1.1)
+    result[:, :, 2] = result[:, :, 2] - \
+        ((avg_b - 128) * (result[:, :, 0] / 255.0) * 1.1)
     result = cv2.cvtColor(result, cv2.COLOR_LAB2BGR)
     return result
